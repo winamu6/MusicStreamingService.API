@@ -12,8 +12,8 @@ using SpotifyClone.API.Data;
 namespace SpotifyClone.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250421173725_initialcreate")]
-    partial class initialcreate
+    [Migration("20250421213739_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -339,10 +339,6 @@ namespace SpotifyClone.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CoverImagePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("time");
 
@@ -463,13 +459,11 @@ namespace SpotifyClone.API.Migrations
 
             modelBuilder.Entity("SpotifyClone.API.Models.Song", b =>
                 {
-                    b.HasOne("SpotifyClone.API.Models.Album", "Album")
+                    b.HasOne("SpotifyClone.API.Models.Album", null)
                         .WithMany("Songs")
                         .HasForeignKey("AlbumId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Album");
                 });
 
             modelBuilder.Entity("SpotifyClone.API.Models.Album", b =>

@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using SpotifyClone.API.Data;
 using SpotifyClone.API.Models;
 using SpotifyClone.API.Services.AuthServices;
+using SpotifyClone.API.Services.SupabaseStorageServices;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,6 +52,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 
 
 var app = builder.Build();

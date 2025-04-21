@@ -336,10 +336,6 @@ namespace SpotifyClone.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CoverImagePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("time");
 
@@ -460,13 +456,11 @@ namespace SpotifyClone.API.Migrations
 
             modelBuilder.Entity("SpotifyClone.API.Models.Song", b =>
                 {
-                    b.HasOne("SpotifyClone.API.Models.Album", "Album")
+                    b.HasOne("SpotifyClone.API.Models.Album", null)
                         .WithMany("Songs")
                         .HasForeignKey("AlbumId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Album");
                 });
 
             modelBuilder.Entity("SpotifyClone.API.Models.Album", b =>

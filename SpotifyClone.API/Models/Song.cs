@@ -9,10 +9,8 @@
         public TimeSpan Duration { get; set; }
 
         public string AudioFilePath { get; set; }
-        public string CoverImagePath { get; set; }
 
         public int AlbumId { get; set; }
-        public Album Album { get; set; }
 
         public ICollection<Like> Likes { get; set; }
     }
