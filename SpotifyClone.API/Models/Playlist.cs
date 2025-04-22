@@ -8,6 +8,8 @@
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
 
+        public string? CoverImagePath { get; set; }
+
         public ICollection<PlaylistSong> PlaylistSongs { get; set; }
     }
 }
