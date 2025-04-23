@@ -121,5 +121,49 @@ namespace SpotifyClone.API.Controllers
             return Ok(albums);
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchAlbums(
+            [FromQuery] string? query,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortBy = "Name",
+            [FromQuery] bool descending = false)
+        {
+            var albumsQuery = _context.Albums.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var words = query.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var word in words)
+                {
+                    albumsQuery = albumsQuery.Where(a =>
+                        EF.Functions.Like(a.Title.ToLower(), $"%{word}%") ||
+                        EF.Functions.Like(a.ArtistName.ToLower(), $"%{word}%")
+                    );
+                }
+            }
+
+            albumsQuery = sortBy?.ToLower() switch
+            {
+                "author" => descending ? albumsQuery.OrderByDescending(a => a.ArtistName) : albumsQuery.OrderBy(a => a.ArtistName),
+                _ => descending ? albumsQuery.OrderByDescending(a => a.Title) : albumsQuery.OrderBy(a => a.Title)
+            };
+
+            var total = await albumsQuery.CountAsync();
+            var albums = await albumsQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                TotalItems = total,
+                Page = page,
+                PageSize = pageSize,
+                Items = albums
+            });
+        }
+
+
     }
 }

@@ -124,5 +124,19 @@ namespace SpotifyClone.API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchPlaylists([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("Query is required.");
+
+            var playlists = await _context.Playlists
+                .Where(a => a.Name.Contains(query))
+                .ToListAsync();
+
+            return Ok(playlists);
+        }
+
     }
 }
