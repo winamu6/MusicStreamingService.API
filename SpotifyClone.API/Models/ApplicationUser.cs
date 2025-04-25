@@ -9,6 +9,8 @@ namespace SpotifyClone.API.Models
 
         public ICollection<Playlist> Playlists { get; set; }
         public ICollection<Like> Likes { get; set; }
+        public ICollection<ListeningHistory> ListeningHistories { get; set; }
+
     }
 
     public enum UserRole

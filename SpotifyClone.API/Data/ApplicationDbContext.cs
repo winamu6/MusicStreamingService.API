@@ -14,6 +14,7 @@ namespace SpotifyClone.API.Data
         public DbSet<Playlist> Playlists { get; set; }
         public DbSet<PlaylistSong> PlaylistSongs { get; set; }
         public DbSet<Like> Likes { get; set; }
+        public DbSet<ListeningHistory> ListeningHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -31,6 +32,16 @@ namespace SpotifyClone.API.Data
                 .HasOne(ps => ps.Song)
                 .WithMany()
                 .HasForeignKey(ps => ps.SongId);
+
+            builder.Entity<ListeningHistory>()
+                .HasOne(l => l.User)
+                .WithMany(u => u.ListeningHistories)
+                .HasForeignKey(l => l.UserId);
+
+            builder.Entity<ListeningHistory>()
+                .HasOne(l => l.Song)
+                .WithMany()
+                .HasForeignKey(l => l.SongId);
         }
     }
 }

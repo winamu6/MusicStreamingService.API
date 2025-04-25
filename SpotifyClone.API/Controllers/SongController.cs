@@ -153,11 +153,55 @@ namespace SpotifyClone.API.Controllers
 
             song.ListenCount++;
             await _context.SaveChangesAsync();
-            
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var history = new ListeningHistory
+                    {
+                        UserId = userId,
+                        SongId = song.Id,
+                        ListenedAt = DateTime.UtcNow
+                    };
+
+                    _context.ListeningHistories.Add(history);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             var publicUrl = await _storage.GetPublicUrlAsync("songs", song.AudioFilePath);
 
             return Redirect(publicUrl);
         }
 
+        [Authorize]
+        [HttpGet("history")]
+        public async Task<IActionResult> GetListeningHistory()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var history = await _context.ListeningHistories
+                .Where(h => h.UserId == userId)
+                .OrderByDescending(h => h.ListenedAt)
+                .Include(h => h.Song)
+                .Select(h => new
+                {
+                    h.Song.Id,
+                    h.Song.Title,
+                    h.Song.ArtistName,
+                    h.Song.Genre,
+                    h.Song.Duration,
+                    h.Song.AudioFilePath,
+                    h.ListenedAt
+                })
+                .ToListAsync();
+
+            return Ok(history);
+        }
     }
 }
