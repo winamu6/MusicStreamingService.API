@@ -142,5 +142,22 @@ namespace SpotifyClone.API.Controllers
                 Items = songs
             });
         }
+
+        [AllowAnonymous]
+        [HttpGet("{id}/listen")]
+        public async Task<IActionResult> ListenToSong(int id)
+        {
+            var song = await _context.Songs.FirstOrDefaultAsync(s => s.Id == id);
+            if (song == null)
+                return NotFound();
+
+            song.ListenCount++;
+            await _context.SaveChangesAsync();
+            
+            var publicUrl = await _storage.GetPublicUrlAsync("songs", song.AudioFilePath);
+
+            return Redirect(publicUrl);
+        }
+
     }
 }
