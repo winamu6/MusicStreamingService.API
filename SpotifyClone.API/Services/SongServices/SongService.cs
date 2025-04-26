@@ -3,7 +3,7 @@ using SpotifyClone.API.Models.DTOs;
 using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.SongRepositories.SongRepositoriesInterfaces;
 using SpotifyClone.API.Services.SongServices.SongInterfaces;
-using SpotifyClone.API.Services.SupabaseStorageServices;
+using SpotifyClone.API.Services.SupabaseStorageServices.SupabaseStorageInterfaces;
 using SpotifyClone.API.Utils;
 using System.Security.Claims;
 

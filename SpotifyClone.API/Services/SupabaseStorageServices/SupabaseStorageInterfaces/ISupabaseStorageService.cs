@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.API.Services.SupabaseStorageServices
+﻿namespace SpotifyClone.API.Services.SupabaseStorageServices.SupabaseStorageInterfaces
 {
     public interface ISupabaseStorageService { 
         Task<string> UploadFileAsync(string bucket, string fileName, Stream fileStream); 

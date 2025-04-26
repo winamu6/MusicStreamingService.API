@@ -22,6 +22,7 @@ using SpotifyClone.API.Repositories.SongRepositories;
 using SpotifyClone.API.Services.SongServices.SongInterfaces;
 using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Services.SongServices;
+using SpotifyClone.API.Services.SupabaseStorageServices.SupabaseStorageInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
