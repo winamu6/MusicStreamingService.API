@@ -14,6 +14,10 @@ using SpotifyClone.API.Repositories.AlbumRepositories.AlbumRepositoriesInterface
 using SpotifyClone.API.Repositories.AlbumRepositories;
 using SpotifyClone.API.Services.AlbumServices.AlbumInterfaces;
 using SpotifyClone.API.Services.AlbumServices;
+using SpotifyClone.API.Repositories.PlaylistRepositories.PlaylistRepositoriesInterfaces;
+using SpotifyClone.API.Repositories.PlaylistRepositories;
+using SpotifyClone.API.Services.PlaylistServices.PlaylistInterfaces;
+using SpotifyClone.API.Services.PlaylistServices;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -69,6 +73,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<IAlbumService, AlbumService>();
 builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
+
+builder.Services.AddScoped<IPlaylistService, PlaylistService>();
+builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 
 builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 

@@ -21,10 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repositories\PlaylistRepositories\PlaylistRepositoriesInterfaces\" />
     <Folder Include="Repositories\SongRepositories\SongRepositoriesInterfaces\" />
     <Folder Include="Repositories\SupadaseStorageRepositories\SupabaseRepositoriesInterfaces\" />
-    <Folder Include="Services\PlaylistServices\PlaylistInterfaces\" />
     <Folder Include="Services\SongServices\SongInterfaces\" />
   </ItemGroup>
 
