@@ -21,7 +21,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repositories\" />
+    <Folder Include="Repositories\AlbumRepositories\" />
+    <Folder Include="Repositories\PlaylistRepositories\" />
+    <Folder Include="Repositories\SongRepositories\" />
+    <Folder Include="Repositories\SupadaseStorageRepositories\" />
+    <Folder Include="Services\AlbumServices\" />
+    <Folder Include="Services\PlaylistServices\" />
+    <Folder Include="Services\SongServices\" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SpotifyClone.API.Data;
 using SpotifyClone.API.Models;
+using SpotifyClone.API.Repositories.AuthRepositories.AuthRepositoriesInterfaces;
+using SpotifyClone.API.Repositories.AuthRepositories;
 using SpotifyClone.API.Services.AuthServices;
+using SpotifyClone.API.Services.AuthServices.Interfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices;
 using System.Text;
 
@@ -35,7 +38,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Добавляем Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -58,6 +60,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 
 
