@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SpotifyClone.API.Data;
 using SpotifyClone.API.DTOs;
 using SpotifyClone.API.Models;
+using SpotifyClone.API.Services.AlbumServices.AlbumInterfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices;
 using SpotifyClone.API.Utils;
 using Supabase.Gotrue;
@@ -16,89 +17,31 @@ namespace SpotifyClone.API.Controllers
     [Route("api/[controller]")]
     public class AlbumsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context; 
-        private readonly ISupabaseStorageService _storage;
+        private readonly IAlbumService _albumService;
 
-        public AlbumsController(ApplicationDbContext context, ISupabaseStorageService storage)
+        public AlbumsController(IAlbumService albumService)
         {
-            _context = context;
-            _storage = storage;
+            _albumService = albumService;
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateAlbum([FromForm] AlbumUploadDto dto)
         {
-            if (!RoleChecker.IsMusicianOrAdmin(User))
-                return Forbid();
-
-            string? coverPath = null;
-
-            if (dto.CoverImage != null)
-            {
-                var fileName = $"album_cover_{Guid.NewGuid()}_{dto.CoverImage.FileName}";
-                coverPath = await _storage.UploadFileAsync("albums", fileName, dto.CoverImage.OpenReadStream());
-            }
-
-            var album = new Album
-            {
-                Title = dto.Title,
-                ArtistName = dto.ArtistName,
-                ReleaseDate = dto.ReleaseDate,
-                CoverImagePath = coverPath
-            };
-
-            _context.Albums.Add(album);
-            await _context.SaveChangesAsync();
-
+            var album = await _albumService.CreateAlbumAsync(dto, User);
             return Ok(album);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAlbum(int id, [FromForm] AlbumUploadDto dto)
         {
-            if (!RoleChecker.IsMusicianOrAdmin(User))
-                return Forbid();
-
-            var album = await _context.Albums.FindAsync(id);
-            if (album == null)
-                return NotFound();
-
-            album.Title = dto.Title;
-            album.ArtistName = dto.ArtistName;
-            album.ReleaseDate = dto.ReleaseDate;
-
-            if (dto.CoverImage != null)
-            {
-                if (!string.IsNullOrEmpty(album.CoverImagePath))
-                    await _storage.DeleteFileAsync("albums", album.CoverImagePath);
-
-                var fileName = $"album_cover_{Guid.NewGuid()}_{dto.CoverImage.FileName}";
-                album.CoverImagePath = await _storage.UploadFileAsync("albums", fileName, dto.CoverImage.OpenReadStream());
-            }
-
-            await _context.SaveChangesAsync();
+            var album = await _albumService.UpdateAlbumAsync(id, dto, User);
             return Ok(album);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAlbum(int id)
         {
-            if (!RoleChecker.IsMusicianOrAdmin(User))
-                return Forbid();
-
-            var album = await _context.Albums.Include(a => a.Songs).FirstOrDefaultAsync(a => a.Id == id);
-            if (album == null)
-                return NotFound();
-
-            if (!string.IsNullOrEmpty(album.CoverImagePath))
-                await _storage.DeleteFileAsync("albums", album.CoverImagePath);
-
-            if (album.Songs.Any())
-                return BadRequest("Album contains songs. Delete them first.");
-
-            _context.Albums.Remove(album);
-            await _context.SaveChangesAsync();
-
+            await _albumService.DeleteAlbumAsync(id, User);
             return NoContent();
         }
 
@@ -106,7 +49,7 @@ namespace SpotifyClone.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAlbum(int id)
         {
-            var album = await _context.Albums.Include(a => a.Songs).FirstOrDefaultAsync(a => a.Id == id);
+            var album = await _albumService.GetAlbumAsync(id);
             if (album == null)
                 return NotFound();
 
@@ -117,7 +60,7 @@ namespace SpotifyClone.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAlbums()
         {
-            var albums = await _context.Albums.Include(a => a.Songs).ToListAsync();
+            var albums = await _albumService.GetAllAlbumsAsync();
             return Ok(albums);
         }
 
@@ -129,41 +72,8 @@ namespace SpotifyClone.API.Controllers
             [FromQuery] string? sortBy = "Name",
             [FromQuery] bool descending = false)
         {
-            var albumsQuery = _context.Albums.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(query))
-            {
-                var words = query.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                foreach (var word in words)
-                {
-                    albumsQuery = albumsQuery.Where(a =>
-                        EF.Functions.Like(a.Title.ToLower(), $"%{word}%") ||
-                        EF.Functions.Like(a.ArtistName.ToLower(), $"%{word}%")
-                    );
-                }
-            }
-
-            albumsQuery = sortBy?.ToLower() switch
-            {
-                "author" => descending ? albumsQuery.OrderByDescending(a => a.ArtistName) : albumsQuery.OrderBy(a => a.ArtistName),
-                _ => descending ? albumsQuery.OrderByDescending(a => a.Title) : albumsQuery.OrderBy(a => a.Title)
-            };
-
-            var total = await albumsQuery.CountAsync();
-            var albums = await albumsQuery
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new
-            {
-                TotalItems = total,
-                Page = page,
-                PageSize = pageSize,
-                Items = albums
-            });
+            var result = await _albumService.SearchAlbumsAsync(query, page, pageSize, sortBy, descending);
+            return Ok(result);
         }
-
-
     }
 }

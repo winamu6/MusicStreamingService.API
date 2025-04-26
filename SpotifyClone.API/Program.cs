@@ -10,6 +10,10 @@ using SpotifyClone.API.Services.AuthServices;
 using SpotifyClone.API.Services.AuthServices.Interfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices;
 using System.Text;
+using SpotifyClone.API.Repositories.AlbumRepositories.AlbumRepositoriesInterfaces;
+using SpotifyClone.API.Repositories.AlbumRepositories;
+using SpotifyClone.API.Services.AlbumServices.AlbumInterfaces;
+using SpotifyClone.API.Services.AlbumServices;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -63,12 +67,14 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+builder.Services.AddScoped<IAlbumService, AlbumService>();
+builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
+
 builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
