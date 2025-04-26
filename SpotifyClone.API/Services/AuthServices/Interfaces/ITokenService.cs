@@ -1,4 +1,4 @@
-﻿using SpotifyClone.API.Models;
+﻿using SpotifyClone.API.Models.Entities;
 
 namespace SpotifyClone.API.Services.AuthServices.Interfaces
 {

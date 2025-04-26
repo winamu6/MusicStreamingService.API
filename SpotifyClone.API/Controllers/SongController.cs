@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SpotifyClone.API.DTOs;
 using SpotifyClone.API.Models;
 using SpotifyClone.API.Utils;
 using System.Security.Claims;
@@ -8,95 +7,41 @@ using System;
 using SpotifyClone.API.Data;
 using SpotifyClone.API.Services.SupabaseStorageServices;
 using Microsoft.EntityFrameworkCore;
+using SpotifyClone.API.Services.SongServices.SongInterfaces;
+using SpotifyClone.API.Models.DTOs;
 
 namespace SpotifyClone.API.Controllers
 {
-    [Authorize] [ApiController]
+    [Authorize]
+    [ApiController]
     [Route("api/[controller]")]
     public class SongsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context; private readonly ISupabaseStorageService _storage;
+        private readonly ISongService _songService;
 
-        public SongsController(ApplicationDbContext context, ISupabaseStorageService storage)
+        public SongsController(ISongService songService)
         {
-            _context = context;
-            _storage = storage;
+            _songService = songService;
         }
 
         [HttpPost("upload")]
         public async Task<IActionResult> UploadSong([FromForm] SongUploadDto dto)
         {
-            if (!RoleChecker.IsMusicianOrAdmin(User))
-                return Forbid();
-
-            if (dto.AudioFile == null || dto.AudioFile.Length == 0)
-                return BadRequest("Audio file is required.");
-
-            if (!await _context.Albums.AnyAsync(a => a.Id == dto.AlbumId))
-                return BadRequest("Album does not exist.");
-
-            var audioFileName = $"audio_{Guid.NewGuid()}_{dto.AudioFile.FileName}";
-            var audioPath = await _storage.UploadFileAsync("songs", audioFileName, dto.AudioFile.OpenReadStream());
-
-            var song = new Song
-            {
-                Title = dto.Title,
-                ArtistName = dto.ArtistName,
-                Genre = dto.Genre,
-                Duration = TimeSpan.FromSeconds(dto.Duration),
-                AlbumId = dto.AlbumId,
-                AudioFilePath = audioPath
-            };
-
-            _context.Songs.Add(song);
-            await _context.SaveChangesAsync();
-
+            var song = await _songService.UploadSongAsync(dto, User);
             return Ok(song);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditSong(int id, [FromForm] SongUploadDto dto)
         {
-            if (!RoleChecker.IsMusicianOrAdmin(User))
-                return Forbid();
-
-            var song = await _context.Songs.FindAsync(id);
-            if (song == null)
-                return NotFound();
-
-            song.Title = dto.Title;
-            song.ArtistName = dto.ArtistName;
-            song.Genre = dto.Genre;
-            song.Duration = TimeSpan.FromSeconds(dto.Duration);
-            song.AlbumId = dto.AlbumId;
-
-            if (dto.AudioFile != null)
-            {
-                await _storage.DeleteFileAsync("songs", song.AudioFilePath);
-                var newAudioName = $"audio_{Guid.NewGuid()}_{dto.AudioFile.FileName}";
-                song.AudioFilePath = await _storage.UploadFileAsync("songs", newAudioName, dto.AudioFile.OpenReadStream());
-            }
-
-
-            await _context.SaveChangesAsync();
+            var song = await _songService.EditSongAsync(id, dto, User);
             return Ok(song);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSong(int id)
         {
-            if (!RoleChecker.IsMusicianOrAdmin(User))
-                return Forbid();
-
-            var song = await _context.Songs.FindAsync(id);
-            if (song == null)
-                return NotFound();
-
-            await _storage.DeleteFileAsync("songs", song.AudioFilePath);
-
-            _context.Songs.Remove(song);
-            await _context.SaveChangesAsync();
-
+            await _songService.DeleteSongAsync(id, User);
             return NoContent();
         }
 
@@ -108,99 +53,22 @@ namespace SpotifyClone.API.Controllers
             [FromQuery] string? sortBy = "Name",
             [FromQuery] bool descending = false)
         {
-            var songsQuery = _context.Songs.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(query))
-            {
-                var words = query.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                foreach (var word in words)
-                {
-                    songsQuery = songsQuery.Where(s =>
-                        EF.Functions.Like(s.Title.ToLower(), $"%{word}%") ||
-                        EF.Functions.Like(s.ArtistName.ToLower(), $"%{word}%")
-                    );
-                }
-            }
-
-            songsQuery = sortBy?.ToLower() switch
-            {
-                "author" => descending ? songsQuery.OrderByDescending(s => s.ArtistName) : songsQuery.OrderBy(s => s.ArtistName),
-                _ => descending ? songsQuery.OrderByDescending(s => s.Title) : songsQuery.OrderBy(s => s.Title)
-            };
-
-            var total = await songsQuery.CountAsync();
-            var songs = await songsQuery
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new
-            {
-                TotalItems = total,
-                Page = page,
-                PageSize = pageSize,
-                Items = songs
-            });
+            var result = await _songService.SearchSongsAsync(query, page, pageSize, sortBy, descending);
+            return Ok(result);
         }
 
         [AllowAnonymous]
         [HttpGet("{id}/listen")]
         public async Task<IActionResult> ListenToSong(int id)
         {
-            var song = await _context.Songs.FirstOrDefaultAsync(s => s.Id == id);
-            if (song == null)
-                return NotFound();
-
-            song.ListenCount++;
-            await _context.SaveChangesAsync();
-
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    var history = new ListeningHistory
-                    {
-                        UserId = userId,
-                        SongId = song.Id,
-                        ListenedAt = DateTime.UtcNow
-                    };
-
-                    _context.ListeningHistories.Add(history);
-                    await _context.SaveChangesAsync();
-                }
-            }
-
-            var publicUrl = await _storage.GetPublicUrlAsync("songs", song.AudioFilePath);
-
-            return Redirect(publicUrl);
+            var url = await _songService.ListenToSongAsync(id, User);
+            return Redirect(url);
         }
 
-        [Authorize]
         [HttpGet("history")]
         public async Task<IActionResult> GetListeningHistory()
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var history = await _context.ListeningHistories
-                .Where(h => h.UserId == userId)
-                .OrderByDescending(h => h.ListenedAt)
-                .Include(h => h.Song)
-                .Select(h => new
-                {
-                    h.Song.Id,
-                    h.Song.Title,
-                    h.Song.ArtistName,
-                    h.Song.Genre,
-                    h.Song.Duration,
-                    h.Song.AudioFilePath,
-                    h.ListenedAt
-                })
-                .ToListAsync();
-
+            var history = await _songService.GetListeningHistoryAsync(User);
             return Ok(history);
         }
     }

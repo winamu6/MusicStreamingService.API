@@ -1,6 +1,6 @@
-﻿using SpotifyClone.API.Models;
+﻿using SpotifyClone.API.Models.Entities;
 
-namespace SpotifyClone.API.DTOs
+namespace SpotifyClone.API.Models.DTOs
 {
     public class RegisterDto
     {

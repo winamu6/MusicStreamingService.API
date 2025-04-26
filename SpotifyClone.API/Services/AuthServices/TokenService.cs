@@ -1,5 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using SpotifyClone.API.Models;
+using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Services.AuthServices.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using SpotifyClone.API.Models;
+using SpotifyClone.API.Models.Entities;
 
 namespace SpotifyClone.API.Data
 {

@@ -1,5 +1,5 @@
-﻿using SpotifyClone.API.DTOs;
-using SpotifyClone.API.Models;
+﻿using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Models.Entities;
 using System.Security.Claims;
 
 namespace SpotifyClone.API.Services.PlaylistServices.PlaylistInterfaces

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SpotifyClone.API.Data;
-using SpotifyClone.API.Models;
 using SpotifyClone.API.Repositories.AuthRepositories.AuthRepositoriesInterfaces;
 using SpotifyClone.API.Repositories.AuthRepositories;
 using SpotifyClone.API.Services.AuthServices;
@@ -18,6 +17,11 @@ using SpotifyClone.API.Repositories.PlaylistRepositories.PlaylistRepositoriesInt
 using SpotifyClone.API.Repositories.PlaylistRepositories;
 using SpotifyClone.API.Services.PlaylistServices.PlaylistInterfaces;
 using SpotifyClone.API.Services.PlaylistServices;
+using SpotifyClone.API.Repositories.SongRepositories.SongRepositoriesInterfaces;
+using SpotifyClone.API.Repositories.SongRepositories;
+using SpotifyClone.API.Services.SongServices.SongInterfaces;
+using SpotifyClone.API.Models.Entities;
+using SpotifyClone.API.Services.SongServices;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -76,6 +80,9 @@ builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
 
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+
+builder.Services.AddScoped<ISongService, SongService>();
+builder.Services.AddScoped<ISongRepository, SongRepository>();
 
 builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 

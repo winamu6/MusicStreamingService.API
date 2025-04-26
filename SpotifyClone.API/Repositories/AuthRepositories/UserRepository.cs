@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SpotifyClone.API.Models;
+using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.AuthRepositories.AuthRepositoriesInterfaces;
 
 namespace SpotifyClone.API.Repositories.AuthRepositories

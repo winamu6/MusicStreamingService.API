@@ -1,5 +1,6 @@
-﻿using SpotifyClone.API.DTOs;
-using SpotifyClone.API.Models;
+﻿using SpotifyClone.API.Models;
+using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.AuthRepositories.AuthRepositoriesInterfaces;
 using SpotifyClone.API.Services.AuthServices.Interfaces;
 

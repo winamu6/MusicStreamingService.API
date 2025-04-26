@@ -1,19 +1,13 @@
-﻿namespace SpotifyClone.API.Models
+﻿namespace SpotifyClone.API.Models.DTOs
 {
-    public class Song
+    public class ListeningHistoryDto
     {
-        public int Id { get; set; }
+        public int SongId { get; set; }
         public string Title { get; set; }
         public string ArtistName { get; set; }
         public string Genre { get; set; }
         public TimeSpan Duration { get; set; }
-
         public string AudioFilePath { get; set; }
-
-        public int ListenCount { get; set; } = 0;
-
-        public int AlbumId { get; set; }
-
-        public ICollection<Like> Likes { get; set; }
+        public DateTime ListenedAt { get; set; }
     }
 }

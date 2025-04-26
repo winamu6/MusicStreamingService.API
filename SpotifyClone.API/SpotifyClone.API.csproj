@@ -21,9 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repositories\SongRepositories\SongRepositoriesInterfaces\" />
     <Folder Include="Repositories\SupadaseStorageRepositories\SupabaseRepositoriesInterfaces\" />
-    <Folder Include="Services\SongServices\SongInterfaces\" />
   </ItemGroup>
 
 </Project>

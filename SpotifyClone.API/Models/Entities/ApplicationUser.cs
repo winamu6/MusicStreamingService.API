@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace SpotifyClone.API.Models
+namespace SpotifyClone.API.Models.Entities
 {
     public class ApplicationUser : IdentityUser
     {

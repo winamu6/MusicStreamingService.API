@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SpotifyClone.API.DTOs;
-using SpotifyClone.API.Models;
+using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.PlaylistRepositories.PlaylistRepositoriesInterfaces;
 using SpotifyClone.API.Services.PlaylistServices.PlaylistInterfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices;

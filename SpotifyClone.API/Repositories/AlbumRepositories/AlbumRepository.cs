@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SpotifyClone.API.Data;
-using SpotifyClone.API.Models;
+using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.AlbumRepositories.AlbumRepositoriesInterfaces;
 
 namespace SpotifyClone.API.Repositories.AlbumRepositories
