@@ -9,10 +9,11 @@ using SpotifyClone.API.Services.SupabaseStorageServices;
 using Microsoft.EntityFrameworkCore;
 using SpotifyClone.API.Services.SongServices.SongInterfaces;
 using SpotifyClone.API.Models.DTOs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace SpotifyClone.API.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/[controller]")]
     public class SongsController : ControllerBase
