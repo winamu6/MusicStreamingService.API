@@ -10,6 +10,9 @@ namespace SpotifyClone.API.Repositories.AuthRepositories.AuthRepositoriesInterfa
         Task AddToRoleAsync(ApplicationUser user, string role);
         Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
         Task<IList<string>> GetRolesAsync(ApplicationUser user);
+        Task<ApplicationUser> FindByIdAsync(string userId); 
+        Task<IdentityResult> UpdateAsync(ApplicationUser user); 
+        Task<IdentityResult> ChangePasswordAsync(ApplicationUser user, string currentPassword, string newPassword);
     }
 
 }

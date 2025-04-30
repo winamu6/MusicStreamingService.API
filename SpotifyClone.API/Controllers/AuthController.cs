@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SpotifyClone.API.Models;
@@ -45,6 +47,28 @@ namespace SpotifyClone.API.Controllers
                 token,
                 expiresIn
             });
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); if (userId == null) return Unauthorized();
+
+            var (isSuccess, error) = await _authService.UpdateProfileAsync(userId, model);
+            return isSuccess ? Ok("Данные обновлены") : BadRequest(new { error });
+
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); if (userId == null) return Unauthorized();
+
+            var (isSuccess, error) = await _authService.ChangePasswordAsync(userId, model);
+            return isSuccess ? Ok("Пароль обновлён") : BadRequest(new { error });
+
         }
     }
 

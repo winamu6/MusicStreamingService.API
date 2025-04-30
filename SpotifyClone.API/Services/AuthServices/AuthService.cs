@@ -57,6 +57,34 @@ namespace SpotifyClone.API.Services.AuthServices
 
             return (true, token, expiresIn, null);
         }
+
+        public async Task<(bool IsSuccess, string ErrorMessage)> UpdateProfileAsync(string userId, UpdateProfileDto model)
+        {
+            var user = await _userRepository.FindByIdAsync(userId); if (user == null) return (false, "Пользователь не найден");
+
+            user.DisplayName = model.DisplayName;
+            user.UserName = model.UserName;
+            user.Email = model.Email;
+
+            var result = await _userRepository.UpdateAsync(user);
+            if (!result.Succeeded)
+                return (false, string.Join("; ", result.Errors.Select(e => e.Description)));
+
+            return (true, null);
+
+        }
+
+        public async Task<(bool IsSuccess, string ErrorMessage)> ChangePasswordAsync(string userId, ChangePasswordDto model)
+        {
+            var user = await _userRepository.FindByIdAsync(userId); if (user == null) return (false, "Пользователь не найден");
+
+            var result = await _userRepository.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (!result.Succeeded)
+                return (false, string.Join("; ", result.Errors.Select(e => e.Description)));
+
+            return (true, null);
+
+        }
     }
 
 }
