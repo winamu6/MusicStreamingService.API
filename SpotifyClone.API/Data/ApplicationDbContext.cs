@@ -42,6 +42,10 @@ namespace SpotifyClone.API.Data
                 .HasOne(l => l.Song)
                 .WithMany()
                 .HasForeignKey(l => l.SongId);
+
+            builder.Entity<Like>()
+                .HasIndex(l => new { l.UserId, l.SongId })
+                .IsUnique();
         }
     }
 }

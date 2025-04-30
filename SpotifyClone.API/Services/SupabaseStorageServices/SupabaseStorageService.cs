@@ -43,7 +43,6 @@ namespace SpotifyClone.API.Services.SupabaseStorageServices
                     fileBytes = memoryStream.ToArray();
                 }
 
-                // Определите MIME-тип на основе расширения файла
                 var contentType = GetMimeType(fileName);
 
                 var result = await bucketRef.Upload(

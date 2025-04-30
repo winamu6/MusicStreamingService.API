@@ -46,7 +46,6 @@ namespace SpotifyClone.API.Controllers
             return NoContent();
         }
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAlbum(int id)
         {
@@ -57,7 +56,6 @@ namespace SpotifyClone.API.Controllers
             return Ok(album);
         }
 
-        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAllAlbums()
         {
