@@ -12,14 +12,21 @@ namespace SpotifyClone.API.Services.SupabaseStorageServices
         public SupabaseStorageService(IConfiguration config)
         {
             var url = config["Supabase:Url"];
-            var key = config["Supabase:Key"];
+            var key = config["Supabase:ServiceRoleKey"];
 
             _client = new Supabase.Client(url, key, new SupabaseOptions
             {
                 AutoConnectRealtime = false
             });
 
-            _client.InitializeAsync().Wait();
+            try
+            {
+                _client.InitializeAsync().Wait();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Supabase init failed: " + ex.Message);
+            }
         }
 
         public async Task<string> UploadFileAsync(string bucket, string fileName, Stream fileStream)
@@ -36,14 +43,36 @@ namespace SpotifyClone.API.Services.SupabaseStorageServices
                     fileBytes = memoryStream.ToArray();
                 }
 
-                var result = await bucketRef.Upload(fileBytes, fileName);
+                // Определите MIME-тип на основе расширения файла
+                var contentType = GetMimeType(fileName);
+
+                var result = await bucketRef.Upload(
+                    fileBytes,
+                    fileName,
+                    new Supabase.Storage.FileOptions
+                    {
+                        ContentType = contentType
+                    }
+                );
 
                 return fileName;
             }
             catch (Supabase.Storage.Exceptions.SupabaseStorageException ex)
             {
-                throw new InvalidOperationException($"Bucket '{bucket}' not found in Supabase. Error: {ex.Message}");
+                throw new InvalidOperationException($"Error uploading to '{bucket}': {ex.Message}");
             }
+        }
+
+        private string GetMimeType(string fileName)
+        {
+            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            return extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                _ => "application/octet-stream"
+            };
         }
 
         public async Task DeleteFileAsync(string bucket, string filePath)
