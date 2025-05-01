@@ -29,6 +29,8 @@ using SpotifyClone.API.Repositories.LikeRepositories.LikeRepositoriesInterfaces;
 using SpotifyClone.API.Repositories.LikeRepositories;
 using SpotifyClone.API.Services.LikeServices.LikeInterfaces;
 using SpotifyClone.API.Services.LikeServices;
+using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;
+using SpotifyClone.API.Repositories.GenreRepositories;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -131,6 +133,7 @@ builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 
 builder.Services.AddScoped<ISongService, SongService>();
 builder.Services.AddScoped<ISongRepository, SongRepository>();
+builder.Services.AddScoped<IGenreRepository, GenreRepository>();
 
 builder.Services.AddScoped<ILikeRepository, LikeRepository>(); 
 builder.Services.AddScoped<ILikeService, LikeService>();

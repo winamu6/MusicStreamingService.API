@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using SpotifyClone.API.Services.SongServices.SongInterfaces;
 using SpotifyClone.API.Models.DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;
 
 namespace SpotifyClone.API.Controllers
 {
@@ -19,10 +20,14 @@ namespace SpotifyClone.API.Controllers
     public class SongsController : ControllerBase
     {
         private readonly ISongService _songService;
+        private readonly IGenreRepository _genreRepository;
 
-        public SongsController(ISongService songService)
+        public SongsController(
+            ISongService songService,
+            IGenreRepository genreRepository)
         {
             _songService = songService;
+            _genreRepository = genreRepository;
         }
 
         [HttpPost("upload")]
@@ -72,5 +77,22 @@ namespace SpotifyClone.API.Controllers
             var history = await _songService.GetListeningHistoryAsync(User);
             return Ok(history);
         }
+
+        [HttpGet("genres")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetGenres()
+        {
+            var genres = await _genreRepository.GetAllGenresAsync();
+            return Ok(genres);
+        }
+
+        [HttpGet("genres/{genreId}/top")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTopSongsByGenre(int genreId)
+        {
+            var songs = await _genreRepository.GetTopSongsByGenreAsync(genreId, 100);
+            return Ok(songs);
+        }
+
     }
 }

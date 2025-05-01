@@ -84,19 +84,19 @@ namespace SpotifyClone.API.Repositories.SongRepositories
                 .Where(h => h.UserId == userId)
                 .OrderByDescending(h => h.ListenedAt)
                 .Include(h => h.Song)
+                    .ThenInclude(s => s.Genre)
                 .Select(h => new ListeningHistoryDto
                 {
                     SongId = h.Song.Id,
                     Title = h.Song.Title,
                     ArtistName = h.Song.ArtistName,
-                    Genre = h.Song.Genre,
+                    Genre = h.Song.Genre.Name,
                     Duration = h.Song.Duration,
                     AudioFilePath = h.Song.AudioFilePath,
                     ListenedAt = h.ListenedAt
                 })
                 .ToListAsync();
         }
-
     }
 
 }

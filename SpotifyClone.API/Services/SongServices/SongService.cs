@@ -1,6 +1,7 @@
 ﻿using SpotifyClone.API.Models.Common;
 using SpotifyClone.API.Models.DTOs;
 using SpotifyClone.API.Models.Entities;
+using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;
 using SpotifyClone.API.Repositories.SongRepositories.SongRepositoriesInterfaces;
 using SpotifyClone.API.Services.SongServices.SongInterfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices.SupabaseStorageInterfaces;
@@ -13,11 +14,16 @@ namespace SpotifyClone.API.Services.SongServices
     {
         private readonly ISongRepository _songRepository;
         private readonly ISupabaseStorageService _storage;
+        private readonly IGenreRepository _genreRepository;
 
-        public SongService(ISongRepository songRepository, ISupabaseStorageService storage)
+        public SongService(
+            ISongRepository songRepository, 
+            ISupabaseStorageService storage,
+            IGenreRepository genreRepository)
         {
             _songRepository = songRepository;
             _storage = storage;
+            _genreRepository = genreRepository;
         }
 
         public async Task<Song> UploadSongAsync(SongUploadDto dto, ClaimsPrincipal user)
@@ -33,14 +39,15 @@ namespace SpotifyClone.API.Services.SongServices
 
             var fileName = $"audio_{Guid.NewGuid()}_{dto.AudioFile.FileName}";
             var audioPath = await _storage.UploadFileAsync("songs", fileName, dto.AudioFile.OpenReadStream());
+            var genre = await _genreRepository.GetOrCreateGenreAsync(dto.GenreName);
 
             var song = new Song
             {
                 Title = dto.Title,
                 ArtistName = dto.ArtistName,
-                Genre = dto.Genre,
                 Duration = TimeSpan.FromSeconds(dto.Duration),
                 AlbumId = dto.AlbumId,
+                GenreId = genre.Id,
                 AudioFilePath = audioPath
             };
 
@@ -57,9 +64,11 @@ namespace SpotifyClone.API.Services.SongServices
             if (song == null)
                 throw new KeyNotFoundException("Song not found.");
 
+            var genre = await _genreRepository.GetOrCreateGenreAsync(dto.GenreName);
+
             song.Title = dto.Title;
             song.ArtistName = dto.ArtistName;
-            song.Genre = dto.Genre;
+            song.GenreId = genre.Id;
             song.Duration = TimeSpan.FromSeconds(dto.Duration);
             song.AlbumId = dto.AlbumId;
 
