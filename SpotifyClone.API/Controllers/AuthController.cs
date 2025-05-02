@@ -24,7 +24,7 @@ namespace SpotifyClone.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        public async Task<IActionResult> Register([FromForm] RegisterDto model)
         {
             var (isSuccess, errorMessage) = await _authService.RegisterAsync(model);
 
@@ -51,25 +51,26 @@ namespace SpotifyClone.API.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("profile")]
-        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
+        public async Task<IActionResult> UpdateProfile([FromForm] UpdateProfileDto model)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); if (userId == null) return Unauthorized();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
 
             var (isSuccess, error) = await _authService.UpdateProfileAsync(userId, model);
             return isSuccess ? Ok("Данные обновлены") : BadRequest(new { error });
-
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); if (userId == null) return Unauthorized();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
 
             var (isSuccess, error) = await _authService.ChangePasswordAsync(userId, model);
             return isSuccess ? Ok("Пароль обновлён") : BadRequest(new { error });
-
         }
     }
-
 }

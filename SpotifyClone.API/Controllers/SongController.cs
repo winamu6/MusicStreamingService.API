@@ -63,12 +63,11 @@ namespace SpotifyClone.API.Controllers
             return Ok(result);
         }
 
-        [AllowAnonymous]
         [HttpGet("{id}/listen")]
         public async Task<IActionResult> ListenToSong(int id)
         {
             var url = await _songService.ListenToSongAsync(id, User);
-            return Redirect(url);
+            return Ok(new { url });
         }
 
         [HttpGet("history")]
@@ -79,7 +78,6 @@ namespace SpotifyClone.API.Controllers
         }
 
         [HttpGet("genres")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetGenres()
         {
             var genres = await _genreRepository.GetAllGenresAsync();
@@ -87,7 +85,6 @@ namespace SpotifyClone.API.Controllers
         }
 
         [HttpGet("genres/{genreId}/top")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetTopSongsByGenre(int genreId)
         {
             var songs = await _genreRepository.GetTopSongsByGenreAsync(genreId, 100);

@@ -1,8 +1,10 @@
-﻿using SpotifyClone.API.Models;
+﻿using Microsoft.Identity.Client.Extensions.Msal;
+using SpotifyClone.API.Models;
 using SpotifyClone.API.Models.DTOs;
 using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.AuthRepositories.AuthRepositoriesInterfaces;
 using SpotifyClone.API.Services.AuthServices.Interfaces;
+using SpotifyClone.API.Services.SupabaseStorageServices.SupabaseStorageInterfaces;
 
 namespace SpotifyClone.API.Services.AuthServices
 {
@@ -11,18 +13,33 @@ namespace SpotifyClone.API.Services.AuthServices
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
         private readonly IConfiguration _config;
+        private readonly ISupabaseStorageService _storage;
 
-        public AuthService(IUserRepository userRepository, ITokenService tokenService, IConfiguration config)
+        public AuthService(
+            IUserRepository userRepository, 
+            ITokenService tokenService, 
+            IConfiguration config,
+            ISupabaseStorageService supabaseStorageService)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _config = config;
+            _storage = supabaseStorageService;
         }
 
         public async Task<(bool IsSuccess, string ErrorMessage)> RegisterAsync(RegisterDto model)
         {
+            string avatarPath = "default-avatar.png";
+
+            if (model.Avatar != null)
+            {
+                var fileName = $"avatar_{Guid.NewGuid()}_{Path.GetFileName(model.Avatar.FileName)}";
+                avatarPath = await _storage.UploadFileAsync("avatars", fileName, model.Avatar.OpenReadStream());
+            }
+
             var user = new ApplicationUser
             {
+                AvatarPath = avatarPath,
                 UserName = model.Email,
                 Email = model.Email,
                 DisplayName = model.DisplayName,
@@ -37,6 +54,7 @@ namespace SpotifyClone.API.Services.AuthServices
 
             return (true, null);
         }
+
 
         public async Task<(bool IsSuccess, string Token, DateTime ExpiresIn, string ErrorMessage)> LoginAsync(LoginDto model)
         {
@@ -60,19 +78,33 @@ namespace SpotifyClone.API.Services.AuthServices
 
         public async Task<(bool IsSuccess, string ErrorMessage)> UpdateProfileAsync(string userId, UpdateProfileDto model)
         {
-            var user = await _userRepository.FindByIdAsync(userId); if (user == null) return (false, "Пользователь не найден");
+            var user = await _userRepository.FindByIdAsync(userId);
+            if (user == null)
+                return (false, "Пользователь не найден");
 
             user.DisplayName = model.DisplayName;
             user.UserName = model.UserName;
             user.Email = model.Email;
+
+            if (model.Avatar != null)
+            {
+                var fileName = $"avatar_{Guid.NewGuid()}_{Path.GetFileName(model.Avatar.FileName)}";
+                var avatarPath = await _storage.UploadFileAsync("avatars", fileName, model.Avatar.OpenReadStream());
+                user.AvatarPath = avatarPath;
+            }
+            else if (string.IsNullOrEmpty(user.AvatarPath))
+            {
+                user.AvatarPath = "default-avatar.png";
+            }
 
             var result = await _userRepository.UpdateAsync(user);
             if (!result.Succeeded)
                 return (false, string.Join("; ", result.Errors.Select(e => e.Description)));
 
             return (true, null);
-
         }
+
+
 
         public async Task<(bool IsSuccess, string ErrorMessage)> ChangePasswordAsync(string userId, ChangePasswordDto model)
         {

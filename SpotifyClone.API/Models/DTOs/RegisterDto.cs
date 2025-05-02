@@ -4,9 +4,10 @@ namespace SpotifyClone.API.Models.DTOs
 {
     public class RegisterDto
     {
+        public IFormFile? Avatar { get; set; }
         public string Email { get; set; }
         public string DisplayName { get; set; }
         public string Password { get; set; }
-        public UserRole Role { get; set; } // Enum
+        public UserRole Role { get; set; }
     }
 }

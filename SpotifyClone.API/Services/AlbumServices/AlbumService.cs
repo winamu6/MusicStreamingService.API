@@ -13,7 +13,9 @@ namespace SpotifyClone.API.Services.AlbumServices
         private readonly IAlbumRepository _albumRepository;
         private readonly ISupabaseStorageService _storage;
 
-        public AlbumService(IAlbumRepository albumRepository, ISupabaseStorageService storage)
+        public AlbumService(
+            IAlbumRepository albumRepository, 
+            ISupabaseStorageService storage)
         {
             _albumRepository = albumRepository;
             _storage = storage;
