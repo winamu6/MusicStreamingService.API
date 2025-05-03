@@ -13,6 +13,8 @@ namespace SpotifyClone.API.Services.SongServices.SongInterfaces
         Task<PagedResult<Song>> SearchSongsAsync(string? query, int page, int pageSize, string? sortBy, bool descending);
         Task<string> ListenToSongAsync(int id, ClaimsPrincipal user);
         Task<List<ListeningHistoryDto>> GetListeningHistoryAsync(ClaimsPrincipal user);
+        Task<List<Song>> GetRecommendationsAsync(ClaimsPrincipal user, int limit = 100);
+
     }
 
 }

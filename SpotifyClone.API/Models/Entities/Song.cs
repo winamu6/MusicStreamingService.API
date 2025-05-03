@@ -13,6 +13,10 @@
         public int GenreId { get; set; }
         public Genre Genre { get; set; }
 
+        public float Tempo { get; set; }
+        public float Energy { get; set; }
+        public float Danceability { get; set; }
+
         public ICollection<Like> Likes { get; set; }
     }
 

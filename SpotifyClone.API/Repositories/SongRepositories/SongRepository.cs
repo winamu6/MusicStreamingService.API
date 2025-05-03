@@ -97,6 +97,61 @@ namespace SpotifyClone.API.Repositories.SongRepositories
                 })
                 .ToListAsync();
         }
-    }
+        public async Task<List<Song>> GetContentBasedRecommendationsAsync(Song referenceSong, int maxResults = 100)
+        {
+            return await _context.Songs
+                .Where(s => s.Id != referenceSong.Id)
+                .OrderBy(s =>
+                    Math.Abs(s.Tempo - referenceSong.Tempo) +
+                    Math.Abs(s.Energy - referenceSong.Energy) +
+                    Math.Abs(s.Danceability - referenceSong.Danceability) +
+                    (s.GenreId != referenceSong.GenreId ? 1 : 0))
+                .Take(maxResults)
+                .ToListAsync();
+        }
 
+        public async Task<List<int>> GetUserListenedSongIdsAsync(string userId)
+        {
+            return await _context.ListeningHistories
+                .Where(h => h.UserId == userId)
+                .Select(h => h.SongId)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<List<SongFeatureDto>> GetRecentSongFeaturesAsync(string userId, int count)
+        {
+            return await _context.ListeningHistories
+                .Where(h => h.UserId == userId)
+                .OrderByDescending(h => h.ListenedAt)
+                .Select(h => new SongFeatureDto
+                {
+                    Tempo = h.Song.Tempo,
+                    Energy = h.Song.Energy,
+                    Danceability = h.Song.Danceability
+                })
+                .Take(count)
+                .ToListAsync();
+        }
+
+        public async Task<List<Song>> GetSimilarSongsAsync(float tempo, float energy, float danceability, List<int> excludeSongIds, int limit)
+        {
+            return await _context.Songs
+                .Where(s => !excludeSongIds.Contains(s.Id))
+                .Select(s => new
+                {
+                    Song = s,
+                    Distance = Math.Sqrt(
+                        Math.Pow(s.Tempo - tempo, 2) +
+                        Math.Pow(s.Energy - energy, 2) +
+                        Math.Pow(s.Danceability - danceability, 2)
+                    )
+                })
+                .OrderBy(x => x.Distance)
+                .Take(limit)
+                .Select(x => x.Song)
+                .ToListAsync();
+        }
+
+    }
 }

@@ -91,5 +91,12 @@ namespace SpotifyClone.API.Controllers
             return Ok(songs);
         }
 
+        [HttpGet("recommendations")]
+        public async Task<IActionResult> GetRecommendations()
+        {
+            var songs = await _songService.GetRecommendationsAsync(User);
+            return Ok(songs);
+        }
+
     }
 }

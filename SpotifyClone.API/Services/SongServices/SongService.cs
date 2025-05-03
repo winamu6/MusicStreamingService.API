@@ -6,7 +6,9 @@ using SpotifyClone.API.Repositories.SongRepositories.SongRepositoriesInterfaces;
 using SpotifyClone.API.Services.SongServices.SongInterfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices.SupabaseStorageInterfaces;
 using SpotifyClone.API.Utils;
+using System.Net.Http;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace SpotifyClone.API.Services.SongServices
 {
@@ -15,15 +17,18 @@ namespace SpotifyClone.API.Services.SongServices
         private readonly ISongRepository _songRepository;
         private readonly ISupabaseStorageService _storage;
         private readonly IGenreRepository _genreRepository;
+        private readonly HttpClient _httpClient;
 
         public SongService(
             ISongRepository songRepository, 
             ISupabaseStorageService storage,
-            IGenreRepository genreRepository)
+            IGenreRepository genreRepository,
+            HttpClient httpClient)
         {
             _songRepository = songRepository;
             _storage = storage;
             _genreRepository = genreRepository;
+            _httpClient = httpClient;
         }
 
         public async Task<Song> UploadSongAsync(SongUploadDto dto, ClaimsPrincipal user)
@@ -37,8 +42,13 @@ namespace SpotifyClone.API.Services.SongServices
             if (!await _songRepository.AlbumExistsAsync(dto.AlbumId))
                 throw new ArgumentException("Album does not exist.");
 
+            // Загрузка файла на сервер
             var fileName = $"audio_{Guid.NewGuid()}_{dto.AudioFile.FileName}";
             var audioPath = await _storage.UploadFileAsync("songs", fileName, dto.AudioFile.OpenReadStream());
+
+            // Отправка файла на Python-сервис для анализа
+            var pythonResult = await AnalyzeAudioFile(dto.AudioFile);
+
             var genre = await _genreRepository.GetOrCreateGenreAsync(dto.GenreName);
 
             var song = new Song
@@ -48,7 +58,10 @@ namespace SpotifyClone.API.Services.SongServices
                 Duration = TimeSpan.FromSeconds(dto.Duration),
                 AlbumId = dto.AlbumId,
                 GenreId = genre.Id,
-                AudioFilePath = audioPath
+                AudioFilePath = audioPath,
+                Tempo = pythonResult.Tempo,
+                Energy = pythonResult.Energy,
+                Danceability = pythonResult.Danceability
             };
 
             await _songRepository.AddSongAsync(song);
@@ -71,6 +84,10 @@ namespace SpotifyClone.API.Services.SongServices
             song.GenreId = genre.Id;
             song.Duration = TimeSpan.FromSeconds(dto.Duration);
             song.AlbumId = dto.AlbumId;
+            song.Tempo = dto.Tempo;
+            song.Energy = dto.Energy;
+            song.Danceability = dto.Danceability;
+
 
             if (dto.AudioFile != null)
             {
@@ -135,6 +152,55 @@ namespace SpotifyClone.API.Services.SongServices
                 throw new UnauthorizedAccessException();
 
             return await _songRepository.GetListeningHistoryAsync(userId);
+        }
+
+        public async Task<List<Song>> GetRecommendationsAsync(ClaimsPrincipal user, int limit = 100)
+        {
+            var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException();
+
+            var listenedSongIds = await _songRepository
+                .GetUserListenedSongIdsAsync(userId);
+
+            var recentFeatures = await _songRepository
+                .GetRecentSongFeaturesAsync(userId, count: 10);
+
+            if (!recentFeatures.Any())
+                return new List<Song>();
+
+            var avgTempo = recentFeatures.Average(f => f.Tempo);
+            var avgEnergy = recentFeatures.Average(f => f.Energy);
+            var avgDance = recentFeatures.Average(f => f.Danceability);
+
+            var recommendations = await _songRepository
+                .GetSimilarSongsAsync(avgTempo, avgEnergy, avgDance, listenedSongIds, limit);
+
+            return recommendations;
+        }
+
+        private async Task<(float Tempo, float Energy, float Danceability)> AnalyzeAudioFile(IFormFile audioFile)
+        {
+            using var content = new MultipartFormDataContent();
+            var fileContent = new StreamContent(audioFile.OpenReadStream());
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/mpeg");
+            content.Add(fileContent, "file", audioFile.FileName);
+
+            var response = await _httpClient.PostAsync("http://localhost:5000/analyze", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception("Failed to analyze audio file.");
+            }
+
+            var result = await response.Content.ReadAsStringAsync();
+            var json = JsonSerializer.Deserialize<JsonElement>(result);
+
+            float tempo = json.GetProperty("tempo").GetSingle();
+            float energy = json.GetProperty("energy").GetSingle();
+            float danceability = json.GetProperty("danceability").GetSingle();
+
+            return (tempo, energy, danceability);
         }
     }
 

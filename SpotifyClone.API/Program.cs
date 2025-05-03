@@ -35,6 +35,7 @@ using SpotifyClone.API.Repositories.GenreRepositories;
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+var pythonServiceUrl = builder.Configuration.GetSection("PythonService:BaseUrl").Value;
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -120,6 +121,13 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityRequirement(securityRequirement);
 });
+
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("AudioFeatureService", client =>
+{
+    client.BaseAddress = new Uri(pythonServiceUrl);
+});
+
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
