@@ -100,19 +100,71 @@ namespace SpotifyClone.API.Services.AlbumServices
             await _albumRepository.DeleteAlbumAsync(album);
         }
 
-        public async Task<Album?> GetAlbumAsync(int id)
+        public async Task<AlbumDto?> GetAlbumAsync(int id)
         {
-            return await _albumRepository.GetAlbumWithSongsAsync(id);
+            var album = await _albumRepository.GetAlbumWithSongsAsync(id);
+            return album != null ? await MapToDtoAsync(album) : null;
         }
 
-        public async Task<List<Album>> GetAllAlbumsAsync()
+        public async Task<List<AlbumDto>> GetAllAlbumsAsync()
         {
-            return await _albumRepository.GetAllAlbumsAsync();
+            var albums = await _albumRepository.GetAllAlbumsAsync();
+            var result = new List<AlbumDto>();
+
+            foreach (var album in albums)
+            {
+                result.Add(await MapToDtoAsync(album));
+            }
+
+            return result;
+
         }
 
         public async Task<object> SearchAlbumsAsync(string? query, int page, int pageSize, string? sortBy, bool descending)
         {
-            return await _albumRepository.SearchAlbumsAsync(query, page, pageSize, sortBy, descending);
+            var rawResult = await _albumRepository.SearchAlbumsAsync(query, page, pageSize, sortBy, descending);
+            var resultType = rawResult.GetType();
+            var itemsProp = resultType.GetProperty("Items");
+            var items = (List<Album>)itemsProp?.GetValue(rawResult)!;
+
+            var mapped = new List<AlbumDto>();
+            foreach (var album in items)
+            {
+                mapped.Add(await MapToDtoAsync(album));
+            }
+
+            return new
+            {
+                TotalItems = resultType.GetProperty("TotalItems")?.GetValue(rawResult),
+                Page = page,
+                PageSize = pageSize,
+                Items = mapped
+            };
+        }
+
+        private async Task<AlbumDto> MapToDtoAsync(Album album)
+        {
+            string? url = null;
+            if (!string.IsNullOrEmpty(album.CoverImagePath))
+            {
+                url = await _storage.GetPublicUrlAsync("albums", album.CoverImagePath);
+            }
+
+            return new AlbumDto
+            {
+                Id = album.Id,
+                Title = album.Title,
+                ArtistName = album.ArtistName,
+                ReleaseDate = album.ReleaseDate,
+                CoverImageUrl = url,
+                GenreName = album.Genre?.Name ?? "",
+                Songs = album.Songs?.Select(s => new SongDto
+                {
+                    Id = s.Id,
+                    Title = s.Title
+                }).ToList() ?? new List<SongDto>()
+            };
+
         }
     }
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using SpotifyClone.API.Data;
 using SpotifyClone.API.Models;
 using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;
 using SpotifyClone.API.Services.AlbumServices.AlbumInterfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices;
 using SpotifyClone.API.Utils;
@@ -19,10 +20,14 @@ namespace SpotifyClone.API.Controllers
     public class AlbumsController : ControllerBase
     {
         private readonly IAlbumService _albumService;
+        private readonly IGenreRepository _genreRepository;
 
-        public AlbumsController(IAlbumService albumService)
+        public AlbumsController(
+            IAlbumService albumService,
+            IGenreRepository genreRepository)
         {
             _albumService = albumService;
+            _genreRepository = genreRepository;
         }
 
         [HttpPost("create")]
@@ -50,6 +55,16 @@ namespace SpotifyClone.API.Controllers
         public async Task<IActionResult> GetAlbum(int id)
         {
             var album = await _albumService.GetAlbumAsync(id);
+            if (album == null)
+                return NotFound();
+
+            return Ok(album);
+        }
+
+        [HttpGet("genres/{genreId}/top")]
+        public async Task<IActionResult> GetAlbumByGenre(int genreId)
+        {
+            var album = await _genreRepository.GetAlbumsByGenreAsync(genreId, 100);
             if (album == null)
                 return NotFound();
 

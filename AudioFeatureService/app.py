@@ -1,5 +1,5 @@
-from flask import Flask, request, jsonify
 # -*- coding: utf-8 -*-
+from flask import Flask, request, jsonify
 import librosa
 import numpy as np
 import os
@@ -15,11 +15,13 @@ def analyze_audio(file_path):
     tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
     energy = float(np.mean(librosa.feature.rms(y=y)))
     danceability = float(librosa.feature.spectral_flatness(y=y).mean())
+    duration = float(librosa.get_duration(y=y, sr=sr))  # <- Длина трека в секундах
 
     return {
         'tempo': float(tempo),
         'energy': energy,
-        'danceability': danceability
+        'danceability': danceability,
+        'duration_seconds': duration
     }
 
 @app.route('/analyze', methods=['POST'])

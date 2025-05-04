@@ -40,6 +40,14 @@ namespace SpotifyClone.API.Repositories.GenreRepositories
                 .Take(limit)
                 .ToListAsync();
         }
+
+        public async Task<List<Album>> GetAlbumsByGenreAsync(int genreId, int limit)
+        {
+            return await _context.Albums
+                .Where(s => s.GenreId == genreId)
+                .Take(limit)
+                .ToListAsync();
+        }
     }
 
 }

@@ -9,8 +9,8 @@ namespace SpotifyClone.API.Services.AlbumServices.AlbumInterfaces
         Task<Album> CreateAlbumAsync(AlbumUploadDto dto, ClaimsPrincipal user);
         Task<Album> UpdateAlbumAsync(int id, AlbumUploadDto dto, ClaimsPrincipal user);
         Task DeleteAlbumAsync(int id, ClaimsPrincipal user);
-        Task<Album?> GetAlbumAsync(int id);
-        Task<List<Album>> GetAllAlbumsAsync();
+        Task<AlbumDto?> GetAlbumAsync(int id);
+        Task<List<AlbumDto>> GetAllAlbumsAsync();
         Task<object> SearchAlbumsAsync(string? query, int page, int pageSize, string? sortBy, bool descending);
     }
 

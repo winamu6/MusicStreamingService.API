@@ -21,12 +21,18 @@ namespace SpotifyClone.API.Repositories.AlbumRepositories
 
         public async Task<Album?> GetAlbumWithSongsAsync(int id)
         {
-            return await _context.Albums.Include(a => a.Songs).FirstOrDefaultAsync(a => a.Id == id);
+            return await _context.Albums
+                .Include(a => a.Songs)
+                .Include(a => a.Genre)
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<List<Album>> GetAllAlbumsAsync()
         {
-            return await _context.Albums.Include(a => a.Songs).ToListAsync();
+            return await _context.Albums
+                .Include(a => a.Songs)
+                .Include(a => a.Genre)
+                .ToListAsync();
         }
 
         public async Task AddAlbumAsync(Album album)
@@ -49,7 +55,10 @@ namespace SpotifyClone.API.Repositories.AlbumRepositories
 
         public async Task<object> SearchAlbumsAsync(string? query, int page, int pageSize, string? sortBy, bool descending)
         {
-            var albumsQuery = _context.Albums.AsQueryable();
+            var albumsQuery = _context.Albums
+                                .Include(a => a.Songs)
+                                .Include(a => a.Genre)
+                                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query))
             {

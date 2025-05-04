@@ -53,7 +53,7 @@ namespace SpotifyClone.API.Services.SongServices
             {
                 Title = dto.Title,
                 ArtistName = dto.ArtistName,
-                Duration = TimeSpan.FromSeconds(dto.Duration),
+                Duration = TimeSpan.FromSeconds(pythonResult.Duration),
                 AlbumId = dto.AlbumId,
                 GenreId = genre.Id,
                 AudioFilePath = audioPath,
@@ -177,7 +177,7 @@ namespace SpotifyClone.API.Services.SongServices
             return recommendations;
         }
 
-        private async Task<(float Tempo, float Energy, float Danceability)> AnalyzeAudioFile(IFormFile audioFile)
+        private async Task<(float Tempo, float Energy, float Danceability, double Duration)> AnalyzeAudioFile(IFormFile audioFile)
         {
             using var content = new MultipartFormDataContent();
             var fileContent = new StreamContent(audioFile.OpenReadStream());
@@ -197,8 +197,9 @@ namespace SpotifyClone.API.Services.SongServices
             float tempo = json.GetProperty("tempo").GetSingle();
             float energy = json.GetProperty("energy").GetSingle();
             float danceability = json.GetProperty("danceability").GetSingle();
+            double duration = json.GetProperty("duration_seconds").GetDouble();
 
-            return (tempo, energy, danceability);
+            return (tempo, energy, danceability, duration);
         }
     }
 
