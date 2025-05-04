@@ -42,11 +42,9 @@ namespace SpotifyClone.API.Services.SongServices
             if (!await _songRepository.AlbumExistsAsync(dto.AlbumId))
                 throw new ArgumentException("Album does not exist.");
 
-            // Загрузка файла на сервер
             var fileName = $"audio_{Guid.NewGuid()}_{dto.AudioFile.FileName}";
             var audioPath = await _storage.UploadFileAsync("songs", fileName, dto.AudioFile.OpenReadStream());
 
-            // Отправка файла на Python-сервис для анализа
             var pythonResult = await AnalyzeAudioFile(dto.AudioFile);
 
             var genre = await _genreRepository.GetOrCreateGenreAsync(dto.GenreName);

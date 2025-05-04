@@ -48,11 +48,24 @@ namespace SpotifyClone.API.Data
                 .HasIndex(l => new { l.UserId, l.SongId })
                 .IsUnique();
 
+            builder.Entity<Album>()
+                .HasMany(a => a.Songs)
+                .WithOne(s => s.Album)
+                .HasForeignKey(s => s.AlbumId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
             builder.Entity<Genre>()
-            .HasMany(g => g.Songs)
-            .WithOne(s => s.Genre)
-            .HasForeignKey(s => s.GenreId)
-            .OnDelete(DeleteBehavior.Cascade);
+                .HasMany(g => g.Songs)
+                .WithOne(s => s.Genre)
+                .HasForeignKey(s => s.GenreId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Genre>()
+                .HasMany(g => g.Albums)
+                .WithOne(a => a.Genre)
+                .HasForeignKey(a => a.GenreId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

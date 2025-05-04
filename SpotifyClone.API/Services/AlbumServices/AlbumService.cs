@@ -1,6 +1,7 @@
 ﻿using SpotifyClone.API.Models.DTOs;
 using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.AlbumRepositories.AlbumRepositoriesInterfaces;
+using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;
 using SpotifyClone.API.Services.AlbumServices.AlbumInterfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices.SupabaseStorageInterfaces;
 using SpotifyClone.API.Utils;
@@ -12,13 +13,16 @@ namespace SpotifyClone.API.Services.AlbumServices
     {
         private readonly IAlbumRepository _albumRepository;
         private readonly ISupabaseStorageService _storage;
+        private readonly IGenreRepository _genreRepository;
 
         public AlbumService(
             IAlbumRepository albumRepository, 
-            ISupabaseStorageService storage)
+            ISupabaseStorageService storage,
+            IGenreRepository genreRepository)
         {
             _albumRepository = albumRepository;
             _storage = storage;
+            _genreRepository = genreRepository;
         }
 
         public async Task<Album> CreateAlbumAsync(AlbumUploadDto dto, ClaimsPrincipal user)
@@ -34,12 +38,15 @@ namespace SpotifyClone.API.Services.AlbumServices
                 coverPath = await _storage.UploadFileAsync("albums", fileName, dto.CoverImage.OpenReadStream());
             }
 
+            var genre = await _genreRepository.GetOrCreateGenreAsync(dto.GenreName);
+
             var album = new Album
             {
                 Title = dto.Title,
                 ArtistName = dto.ArtistName,
                 ReleaseDate = dto.ReleaseDate,
-                CoverImagePath = coverPath
+                CoverImagePath = coverPath,
+                Genre = genre
             };
 
             await _albumRepository.AddAlbumAsync(album);
@@ -55,9 +62,12 @@ namespace SpotifyClone.API.Services.AlbumServices
             if (album == null)
                 throw new KeyNotFoundException("Album not found");
 
+            var genre = await _genreRepository.GetOrCreateGenreAsync(dto.GenreName);
+
             album.Title = dto.Title;
             album.ArtistName = dto.ArtistName;
             album.ReleaseDate = dto.ReleaseDate;
+            album.GenreId = genre.Id;
 
             if (dto.CoverImage != null)
             {
