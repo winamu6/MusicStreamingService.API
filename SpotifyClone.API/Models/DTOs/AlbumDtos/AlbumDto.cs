@@ -1,4 +1,6 @@
-﻿namespace SpotifyClone.API.Models.DTOs
+﻿using SpotifyClone.API.Models.DTOs.SongDtos;
+
+namespace SpotifyClone.API.Models.DTOs.AlbumDtos
 {
     public class AlbumDto
     {
@@ -9,11 +11,5 @@
         public string? CoverImageUrl { get; set; }
         public string GenreName { get; set; } = default!;
         public List<SongDto> Songs { get; set; } = new();
-    }
-
-    public class SongDto
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = default!;
     }
 }

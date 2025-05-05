@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SpotifyClone.API.Data;
 using SpotifyClone.API.Models;
-using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Models.DTOs.AlbumDtos;
 using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;
 using SpotifyClone.API.Services.AlbumServices.AlbumInterfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices;
@@ -12,7 +12,7 @@ using SpotifyClone.API.Utils;
 using Supabase.Gotrue;
 using System;
 
-namespace SpotifyClone.API.Controllers
+namespace SpotifyClone.API.Controllers.AlbumController
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
@@ -55,16 +55,6 @@ namespace SpotifyClone.API.Controllers
         public async Task<IActionResult> GetAlbum(int id)
         {
             var album = await _albumService.GetAlbumAsync(id);
-            if (album == null)
-                return NotFound();
-
-            return Ok(album);
-        }
-
-        [HttpGet("genres/{genreId}/top")]
-        public async Task<IActionResult> GetAlbumByGenre(int genreId)
-        {
-            var album = await _genreRepository.GetAlbumsByGenreAsync(genreId, 100);
             if (album == null)
                 return NotFound();
 

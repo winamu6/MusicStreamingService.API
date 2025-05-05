@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SpotifyClone.API.Data;
 using SpotifyClone.API.Models;
-using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Models.DTOs.PlaylistDtos;
 using SpotifyClone.API.Services.PlaylistServices.PlaylistInterfaces;
 using SpotifyClone.API.Services.SupabaseStorageServices;
 using Supabase.Gotrue;
 
-namespace SpotifyClone.API.Controllers
+namespace SpotifyClone.API.Controllers.PlaylistsController
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]

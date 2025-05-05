@@ -1,4 +1,4 @@
-﻿using SpotifyClone.API.Models.DTOs;
+﻿using SpotifyClone.API.Models.DTOs.PlaylistDtos;
 using SpotifyClone.API.Models.Entities;
 using System.Security.Claims;
 

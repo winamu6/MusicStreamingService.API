@@ -95,6 +95,22 @@ namespace SpotifyClone.API.Services.SupabaseStorageServices
         {
             return _client.Storage.From(bucket).GetPublicUrl(filePath);
         }
-    }
 
+        public async Task<byte[]> DownloadFileAsync(string bucket, string filePath)
+        {
+            var storage = _client.Storage;
+            var bucketRef = storage.From(bucket);
+
+            try
+            {
+                var data = await bucketRef.Download(filePath, (TransformOptions?)null, null);
+                return data;
+            }
+            catch (Supabase.Storage.Exceptions.SupabaseStorageException ex)
+            {
+                throw new InvalidOperationException($"Error downloading file '{filePath}' from bucket '{bucket}': {ex.Message}");
+            }
+        }
+
+    }
 }

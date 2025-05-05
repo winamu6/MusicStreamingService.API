@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SpotifyClone.API.Models;
-using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Models.DTOs.UserDtos;
 using SpotifyClone.API.Services.AuthServices.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace SpotifyClone.API.Controllers
+namespace SpotifyClone.API.Controllers.AuthControllers
 {
     [Route("api/[controller]")]
     [ApiController]

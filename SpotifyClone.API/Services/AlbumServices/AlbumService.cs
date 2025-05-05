@@ -1,4 +1,5 @@
-﻿using SpotifyClone.API.Models.DTOs;
+﻿using SpotifyClone.API.Models.DTOs.AlbumDtos;
+using SpotifyClone.API.Models.DTOs.SongDtos;
 using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.AlbumRepositories.AlbumRepositoriesInterfaces;
 using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;

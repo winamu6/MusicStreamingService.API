@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SpotifyClone.API.Models.DTOs
+namespace SpotifyClone.API.Models.DTOs.SongDtos
 {
     public class SongUploadDto
     {

@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.API.Models.DTOs
+﻿namespace SpotifyClone.API.Models.DTOs.AlbumDtos
 {
     public class AlbumUploadDto { 
         public string Title { get; set; } 

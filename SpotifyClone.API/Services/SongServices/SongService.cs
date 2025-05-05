@@ -1,5 +1,5 @@
 ﻿using SpotifyClone.API.Models.Common;
-using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Models.DTOs.SongDtos;
 using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;
 using SpotifyClone.API.Repositories.SongRepositories.SongRepositoriesInterfaces;
@@ -111,36 +111,9 @@ namespace SpotifyClone.API.Services.SongServices
             await _songRepository.DeleteSongAsync(song);
         }
 
-        public async Task<PagedResult<Song>> SearchSongsAsync(string? query, int page, int pageSize, string? sortBy, bool descending)
+        public async Task<PagedResult<SongDto>> SearchSongsAsync(string? query, int page, int pageSize, string? sortBy, bool descending)
         {
             return await _songRepository.SearchSongsAsync(query, page, pageSize, sortBy, descending);
-        }
-
-        public async Task<string> ListenToSongAsync(int id, ClaimsPrincipal user)
-        {
-            var song = await _songRepository.GetSongByIdAsync(id);
-            if (song == null)
-                throw new KeyNotFoundException("Song not found.");
-
-            song.ListenCount++;
-            await _songRepository.UpdateSongAsync(song);
-
-            if (user.Identity?.IsAuthenticated == true)
-            {
-                var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    var history = new ListeningHistory
-                    {
-                        UserId = userId,
-                        SongId = song.Id,
-                        ListenedAt = DateTime.UtcNow
-                    };
-                    await _songRepository.AddListeningHistoryAsync(history);
-                }
-            }
-
-            return await _storage.GetPublicUrlAsync("songs", song.AudioFilePath);
         }
 
         public async Task<List<ListeningHistoryDto>> GetListeningHistoryAsync(ClaimsPrincipal user)
@@ -201,6 +174,37 @@ namespace SpotifyClone.API.Services.SongServices
 
             return (tempo, energy, danceability, duration);
         }
+
+        public async Task<Stream> GetSongStreamAsync(int id, ClaimsPrincipal user)
+        {
+            var song = await _songRepository.GetSongByIdAsync(id);
+            if (song == null)
+                throw new KeyNotFoundException("Song not found.");
+
+            song.ListenCount++;
+            await _songRepository.UpdateSongAsync(song);
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var history = new ListeningHistory
+                    {
+                        UserId = userId,
+                        SongId = song.Id,
+                        ListenedAt = DateTime.UtcNow
+                    };
+                    await _songRepository.AddListeningHistoryAsync(history);
+                }
+            }
+
+            var bucket = "songs";
+            var filePath = song.AudioFilePath;
+            var fileBytes = await _storage.DownloadFileAsync(bucket, filePath);
+            return new MemoryStream(fileBytes);
+        }
+
     }
 
 }

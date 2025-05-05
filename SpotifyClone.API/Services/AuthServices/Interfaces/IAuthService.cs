@@ -1,4 +1,4 @@
-﻿using SpotifyClone.API.Models.DTOs;
+﻿using SpotifyClone.API.Models.DTOs.UserDtos;
 
 namespace SpotifyClone.API.Services.AuthServices.Interfaces
 {

@@ -8,11 +8,11 @@ using SpotifyClone.API.Data;
 using SpotifyClone.API.Services.SupabaseStorageServices;
 using Microsoft.EntityFrameworkCore;
 using SpotifyClone.API.Services.SongServices.SongInterfaces;
-using SpotifyClone.API.Models.DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SpotifyClone.API.Repositories.GenreRepositories.GenreRepositoriesInterfaces;
+using SpotifyClone.API.Models.DTOs.SongDtos;
 
-namespace SpotifyClone.API.Controllers
+namespace SpotifyClone.API.Controllers.SongControllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
@@ -63,32 +63,11 @@ namespace SpotifyClone.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id}/listen")]
-        public async Task<IActionResult> ListenToSong(int id)
-        {
-            var url = await _songService.ListenToSongAsync(id, User);
-            return Ok(new { url });
-        }
-
         [HttpGet("history")]
         public async Task<IActionResult> GetListeningHistory()
         {
             var history = await _songService.GetListeningHistoryAsync(User);
             return Ok(history);
-        }
-
-        [HttpGet("genres")]
-        public async Task<IActionResult> GetGenres()
-        {
-            var genres = await _genreRepository.GetAllGenresAsync();
-            return Ok(genres);
-        }
-
-        [HttpGet("genres/{genreId}/top")]
-        public async Task<IActionResult> GetTopSongsByGenre(int genreId)
-        {
-            var songs = await _genreRepository.GetTopSongsByGenreAsync(genreId, 100);
-            return Ok(songs);
         }
 
         [HttpGet("recommendations")]

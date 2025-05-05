@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.API.Models.DTOs
+﻿namespace SpotifyClone.API.Models.DTOs.UserDtos
 {
     public class LoginDto
     {

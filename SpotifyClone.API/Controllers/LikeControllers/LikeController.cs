@@ -7,7 +7,7 @@ using SpotifyClone.API.Services.LikeServices.LikeInterfaces;
 using Supabase.Gotrue;
 using System.Security.Claims;
 
-namespace SpotifyClone.API.Controllers
+namespace SpotifyClone.API.Controllers.LikeControllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]

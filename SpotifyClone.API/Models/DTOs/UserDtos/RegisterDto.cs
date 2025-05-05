@@ -1,6 +1,6 @@
 ﻿using SpotifyClone.API.Models.Entities;
 
-namespace SpotifyClone.API.Models.DTOs
+namespace SpotifyClone.API.Models.DTOs.UserDtos
 {
     public class RegisterDto
     {

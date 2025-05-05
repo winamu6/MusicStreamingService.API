@@ -1,19 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client.Extensions.Msal;
 using SpotifyClone.API.Data;
 using SpotifyClone.API.Models.Common;
-using SpotifyClone.API.Models.DTOs;
+using SpotifyClone.API.Models.DTOs.SongDtos;
 using SpotifyClone.API.Models.Entities;
 using SpotifyClone.API.Repositories.SongRepositories.SongRepositoriesInterfaces;
+using SpotifyClone.API.Services.SupabaseStorageServices.SupabaseStorageInterfaces;
+using Supabase.Interfaces;
 
 namespace SpotifyClone.API.Repositories.SongRepositories
 {
     public class SongRepository : ISongRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly ISupabaseStorageService _supabaseStorageService;
 
-        public SongRepository(ApplicationDbContext context)
+        public SongRepository(
+            ApplicationDbContext context,
+            ISupabaseStorageService supabaseStorageService)
         {
             _context = context;
+            _supabaseStorageService = supabaseStorageService;
         }
 
         public async Task<bool> AlbumExistsAsync(int albumId)
@@ -44,9 +51,12 @@ namespace SpotifyClone.API.Repositories.SongRepositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<PagedResult<Song>> SearchSongsAsync(string? query, int page, int pageSize, string? sortBy, bool descending)
+        public async Task<PagedResult<SongDto>> SearchSongsAsync(
+            string? query, int page, int pageSize, string? sortBy, bool descending)
         {
-            var songsQuery = _context.Songs.AsQueryable();
+            var songsQuery = _context.Songs
+                                .Include(s => s.Album)
+                                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query))
             {
@@ -55,8 +65,7 @@ namespace SpotifyClone.API.Repositories.SongRepositories
                 {
                     songsQuery = songsQuery.Where(s =>
                         EF.Functions.Like(s.Title.ToLower(), $"%{word}%") ||
-                        EF.Functions.Like(s.ArtistName.ToLower(), $"%{word}%")
-                    );
+                        EF.Functions.Like(s.ArtistName.ToLower(), $"%{word}%"));
                 }
             }
 
@@ -67,9 +76,28 @@ namespace SpotifyClone.API.Repositories.SongRepositories
             };
 
             var total = await songsQuery.CountAsync();
-            var items = await songsQuery.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            return new PagedResult<Song>(items, total, page, pageSize);
+            var items = await songsQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var results = new List<SongDto>();
+
+            foreach (var song in items)
+            {
+                var coverUrl = await _supabaseStorageService.GetPublicUrlAsync("albums", song.Album.CoverImagePath);
+
+                results.Add(new SongDto
+                {
+                    Id = song.Id,
+                    Title = song.Title,
+                    ArtistName = song.ArtistName,
+                    AlbumCoverUrl = coverUrl
+                });
+            }
+
+            return new PagedResult<SongDto>(results, total, page, pageSize);
         }
 
         public async Task AddListeningHistoryAsync(ListeningHistory history)
@@ -80,22 +108,31 @@ namespace SpotifyClone.API.Repositories.SongRepositories
 
         public async Task<List<ListeningHistoryDto>> GetListeningHistoryAsync(string userId)
         {
-            return await _context.ListeningHistories
+            var histories = await _context.ListeningHistories
                 .Where(h => h.UserId == userId)
                 .OrderByDescending(h => h.ListenedAt)
                 .Include(h => h.Song)
-                    .ThenInclude(s => s.Genre)
-                .Select(h => new ListeningHistoryDto
+                    .ThenInclude(s => s.Album)
+                .Include(h => h.Song.Genre)
+                .ToListAsync();
+
+            var result = new List<ListeningHistoryDto>();
+
+            foreach (var h in histories)
+            {
+                var albumCoverUrl = await _supabaseStorageService.GetPublicUrlAsync("albums", h.Song.Album.CoverImagePath);
+
+                result.Add(new ListeningHistoryDto
                 {
                     SongId = h.Song.Id,
                     Title = h.Song.Title,
                     ArtistName = h.Song.ArtistName,
-                    Genre = h.Song.Genre.Name,
-                    Duration = h.Song.Duration,
-                    AudioFilePath = h.Song.AudioFilePath,
-                    ListenedAt = h.ListenedAt
-                })
-                .ToListAsync();
+                    ListenedAt = h.ListenedAt,
+                    AlbumCoverUrl = albumCoverUrl
+                });
+            }
+
+            return result;
         }
         public async Task<List<Song>> GetContentBasedRecommendationsAsync(Song referenceSong, int maxResults = 100)
         {

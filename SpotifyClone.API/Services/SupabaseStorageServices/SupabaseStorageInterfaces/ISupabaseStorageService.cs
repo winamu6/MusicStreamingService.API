@@ -4,6 +4,6 @@
         Task<string> UploadFileAsync(string bucket, string fileName, Stream fileStream); 
         Task DeleteFileAsync(string bucket, string filePath);
         Task<string> GetPublicUrlAsync(string bucket, string filePath);
-
+        Task<byte[]> DownloadFileAsync(string bucket, string filePath);
     }
 }
